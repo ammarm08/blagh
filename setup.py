@@ -20,7 +20,7 @@ setup(
     packages=['blagh'],
     url="http://github.com/ammarm08/blagh",
     license='MIT',
-    description='Yet another blog post markup language and HTML compiler',
+    description='Yet another blog post markup language and compiler',
     long_description=long_description,
     long_description_content_type='text/markdown',
     install_requires=[]
