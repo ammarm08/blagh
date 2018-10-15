@@ -88,7 +88,7 @@ def add_tag_to_dict(ctx):
 
 
 def advance_to_next_tag(ctx):
-    """advances the program by the amount specified in ctx object"""
+    """wrapper for advance() that advances cursor based on input ctx object"""
     ctx['source'] = advance(ctx['source'], ctx['cursor_advance'])
     return ctx
 

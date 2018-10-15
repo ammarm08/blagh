@@ -66,15 +66,15 @@ Blagh files look like this:
 </imports>
 
 <globals>
-  $slug$ my-awesome-blog-post
+  $slug$ := my-awesome-blog-post
 </globals>
 
 <variables>
-  $title$ My Awesome Blog Post
+  $title$ := My Awesome Blog Post
 </variables>
 
 <macros>
-  $conversation$ <div class="conversation">{}</div>
+  $conversation$ := <div class="conversation">{}</div>
 </macros>
 
 <content>
@@ -167,15 +167,15 @@ So let's rewrite the above example to take advantage of imports.
 `variables.blagh`:
 ```
 <globals>
-  $slug$ my-awesome-blog-post
+  $slug$ := my-awesome-blog-post
 </globals>
 
 <variables>
-  $title$ My Awesome Blog Post
+  $title$ := My Awesome Blog Post
 </variables>
 
 <macros>
-  $conversation$ <div class="conversation">{}</div>
+  $conversation$ := <div class="conversation">{}</div>
 </macros>
 ```
 
