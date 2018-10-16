@@ -31,7 +31,7 @@ def match_variable(contents):
 
 def match_macro_open(contents):
     """matches for any opening <{tag_name}>"""
-    pattern = re.compile('<(\w+)>.+', re.DOTALL)
+    pattern = re.compile('<(\w+)[^>]*>.+', re.DOTALL)
     return pattern.match(contents)
 
 

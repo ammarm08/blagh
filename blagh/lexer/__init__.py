@@ -30,7 +30,7 @@ def advance(src, n):
 
 def match_open_tag(src):
     """matches for any opening <{tag_name}>"""
-    pattern = re.compile('<(\w+)>.+', re.DOTALL)
+    pattern = re.compile('<(\w+)[^>]*>.+', re.DOTALL)
     return pattern.match(src)
 
 

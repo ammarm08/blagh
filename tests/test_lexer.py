@@ -20,6 +20,12 @@ class TestLexer(object):
         assert match
         assert match.group(1) == 'test'
 
+    def test_matches_opening_tag_with_attribute(self):
+        src = '<test href="#">there is more here'
+        match = lexer.match_open_tag(src)
+        assert match
+        assert match.group(1) == 'test'
+
     def test_matches_only_first_opening_tag(self):
         src = '<tag>this is my program</tag>\n<another>hi there</another>'
         match = lexer.match_open_tag(src)

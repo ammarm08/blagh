@@ -35,6 +35,11 @@ class TestExpansion(object):
         assert match
         assert match.group(1) == 'convo'
 
+    def test_matches_valid_macro_opening_with_attribute(self):
+        match = expansion.match_macro_open('<convo href="#"> some stuff </convo>\n')
+        assert match
+        assert match.group(1) == 'convo'
+
     def test_does_not_match_valid_macro_opening(self):
         match = expansion.match_macro_open(' <convo> some stuff </convo>\n')
         assert match is None
@@ -80,6 +85,13 @@ class TestExpansion(object):
         expected = '<li>what</li>'
         assert expansion.expand_macros(macros, src) == expected
 
+    def test_expands_macro_data_with_attribute_into_string(self):
+        macros = { '$conversation$': '<div class="conversation">{}</div>' }
+        src = '<conversation>what</conversation>'
+
+        expected = '<div class="conversation">what</div>'
+        assert expansion.expand_macros(macros, src) == expected
+
     def test_expands_multiple_macros_into_string(self):
         macros = { '$conversation$': '<li>{}</li>', '$foo$': '<p>{}</p>' }
         src = '<conversation>what</conversation><foo>is this</foo>'
@@ -88,17 +100,17 @@ class TestExpansion(object):
         assert expansion.expand_macros(macros, src) == expected
 
     def test_expands_multiple_macros_into_string_recursively_from_src(self):
-        macros = { '$conversation$': '<li>{}</li>', '$foo$': '<p>{}</p>' }
+        macros = { '$conversation$': '<div class="conversation">{}</div>', '$foo$': '<p>{}</p>' }
         src = '<conversation><foo>is this</foo></conversation>'
 
-        expected = '<li><p>is this</p></li>'
+        expected = '<div class="conversation"><p>is this</p></div>'
         assert expansion.expand_macros(macros, src) == expected
 
     def test_expands_multiple_macros_into_string_recursively_from_macro(self):
-        macros = { '$conversation$': '<li><foo>{}</foo></li>', '$foo$': '<p>{}</p>' }
+        macros = { '$conversation$': '<div class="conversation"><foo>{}</foo></div>', '$foo$': '<p>{}</p>' }
         src = '<conversation>is this</conversation>'
 
-        expected = '<li><p>is this</p></li>'
+        expected = '<div class="conversation"><p>is this</p></div>'
         assert expansion.expand_macros(macros, src) == expected
 
     def test_full_variable_and_macro_expansion_on_one_content_tag(self):
