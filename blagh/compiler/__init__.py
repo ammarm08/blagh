@@ -7,7 +7,6 @@ import re
 import logging
 
 logger = logging.getLogger('Compiler')
-logging.basicConfig(level=logging.DEBUG, format="%(name)s:[%(levelname)s]: %(message)s")
 
 
 def replace_variable(old, new, target, offset):
@@ -62,6 +61,8 @@ def compile(tags={}, html=''):
     injecting global variables and content sections
     as necessary
     """
+    logging.debug('compile() ->\n tags: %s\nhtml: %s', repr(tags), html)
+    
     html = compile_globals(html, tags['globals'])
     html = compile_content(html, tags['custom_tags'])
     return html

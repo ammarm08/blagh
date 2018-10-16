@@ -1,5 +1,5 @@
 """
-Parses a blagh file into its content tags.
+Scans a blagh file into its content tags.
 """
 
 import re
@@ -7,8 +7,7 @@ import logging
 
 
 logger = logging.getLogger('Lexer')
-logging.basicConfig(level=logging.DEBUG, format="%(name)s:[%(levelname)s]: %(message)s")
-
+logging.basicConfig(level=logging.DEBUG)
 
 
 def pipe(*args):
@@ -31,12 +30,14 @@ def advance(src, n):
 
 def match_open_tag(src):
     """matches for any opening <{tag_name}>"""
-    return re.match('<(\w+)>.+', src)
+    pattern = re.compile('<(\w+)>.+', re.DOTALL)
+    return pattern.match(src)
 
 
 def match_close_tag(tag, src):
     """matches for a specific closing </{tag_name}>"""
-    return re.match('(.+)<\/({tag})>.?'.format(tag=tag), src)
+    pattern = re.compile('(.+)<\/({tag})>.?'.format(tag=tag), re.DOTALL)
+    return pattern.match(src)
 
 
 def find_opening_tag(ctx):
@@ -92,9 +93,9 @@ def advance_to_next_tag(ctx):
     return ctx
 
 
-def parse(program):
+def scan(program):
     """
-    Parses a program and returns a dict of tag_name:tag_contents pairs
+    Scans a program and returns a dict of tag_name:tag_contents pairs
     """
     ctx = {
         'tags': {},
@@ -105,7 +106,7 @@ def parse(program):
     }
 
     while len(ctx['source']) > 0:
-        logger.debug('parse() -> parsing ctx: %s', repr(ctx))
+        logger.debug('scan() ->\n parsing ctx: %s', repr(ctx))
 
         # runs pipeline of functions in order, transforming ctx in the process
         ctx = pipe(

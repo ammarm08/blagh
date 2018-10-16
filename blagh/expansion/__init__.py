@@ -10,7 +10,6 @@ import logging
 
 
 logger = logging.getLogger('Expansion')
-logging.basicConfig(level=logging.DEBUG, format="%(name)s:[%(levelname)s]: %(message)s")
 
 
 def pipe(*args):
@@ -32,13 +31,14 @@ def match_variable(contents):
 
 def match_macro_open(contents):
     """matches for any opening <{tag_name}>"""
-    return re.match('<(\w+)>.+', contents)
+    pattern = re.compile('<(\w+)>.+', re.DOTALL)
+    return pattern.match(contents)
 
 
 def match_macro_close(name, contents):
     """matches for a specific closing </{name}>"""
-    return re.match('(.+)<\/({name})>.?'.format(name=name), contents)
-
+    pattern = re.compile('(.+)<\/({name})>.?'.format(name=name), re.DOTALL)
+    return pattern.match(contents)
 
 def getvarname(variable):
     """get $varname$ from varname"""
@@ -103,13 +103,13 @@ def expand_variables(variables, contents):
     }
 
     while memo['offset'] < len(contents):
+        logger.debug('expand_variables() ->\n %s', repr(memo))
+
         memo = pipe(
                 find_variable,
                 expand_variable,
                 advance_to_next_variable
                 )(memo)
-
-        logger.debug('expand_variables() -> %s', repr(memo))
 
     return memo['contents']
 
@@ -219,14 +219,14 @@ def expand_macros(macros, contents):
     }
 
     while memo['offset'] < len(contents):
+        logger.debug('expand_macros() ->\n %s', repr(memo))
+
         memo = pipe(
                 find_opening_macro_tag,
                 find_closing_macro_tag,
                 expand_macro,
                 advance_to_next_macro
                 )(memo)
-
-        logger.debug('expand_macros() -> %s', repr(memo))
 
     return memo['contents']
 
@@ -246,6 +246,7 @@ def expand(ctx={}):
     Input must be a dict of parsed macros, variables, globals,
     and custom content tags.
     """
+    logger.debug('expand() ->\n%s', repr(ctx))
 
     # inject macros and variables into custom content tags
     custom_tags = ctx['custom_tags']

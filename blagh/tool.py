@@ -25,7 +25,6 @@ import logging
 # set up basic debugging logger
 
 LOGGER = logging.getLogger("[BLAGH]")
-logging.basicConfig(level=logging.DEBUG, format="%(name)s:[%(levelname)s]: %(message)s")
 
 
 
@@ -35,7 +34,7 @@ def load_file(filename):
         with open(filename) as f:
             return f.read()
     except Exception as e:
-        LOGGER.debug("load_file() -> error loading file from %s", filename)
+        LOGGER.warn("load_file() -> error loading file from %s", filename)
         raise e
 
 
@@ -43,7 +42,7 @@ def create_directory(dirname):
     try:
         os.mkdir(dirname)
     except OSError as e:
-        LOGGER.debug("create_directory() -> error creating dir %s", dirname)
+        LOGGER.warn("create_directory() -> error creating dir %s", dirname)
         raise e
 
 
@@ -52,7 +51,7 @@ def write_file(path, contents):
         with open(path, "w+") as f:
             f.write(contents)
     except Exception as e:
-        LOGGER.debug("write_file() -> error creating file %s", path)
+        LOGGER.warn("write_file() -> error creating file %s", path)
         raise e
 
 
@@ -76,19 +75,23 @@ def parse_arguments():
 
     parser.add_argument("-f", "--file", help="the file to compile", required=True)
     parser.add_argument("-t", "--template", help="the template to compile the file against", required=True)
+    parser.add_argument("--debug", action="store_true", help="set to debug mode")
 
     return parser.parse_args()
 
 
 def main():
     parsed_args = parse_arguments()
+    if parsed_args.debug == True:
+        logging.basicConfig(level=logging.DEBUG, format="%(name)s:[%(levelname)s]: %(message)s")
+
 
     # 1. read .blagh file and .html template
     blagh_file = load_file(parsed_args.file)
     html_template = load_file(parsed_args.template)
 
     # 2. lex the file's tag sections (globals, macros, etc)
-    lexed = lexer.parse(blagh_file)
+    lexed = lexer.scan(blagh_file)
 
     # 3. parse each section and inject all variables into content sections
     parsed_tags = parser.parse(lexed)

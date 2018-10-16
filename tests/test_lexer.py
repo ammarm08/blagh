@@ -74,16 +74,42 @@ class TestLexer(object):
 
     def test_parses_a_full_well_formed_tag(self):
         src = '<tag>this is my program</tag>'
-        tags = lexer.parse(src)
+        tags = lexer.scan(src)
         assert tags
         assert 'tag' in tags
         assert tags['tag'] == 'this is my program'
 
     def test_parses_a_program_with_two_tags(self):
         src = '<tag>this is my program</tag>\n<another>hi there</another>'
-        tags = lexer.parse(src)
+        tags = lexer.scan(src)
         assert tags
         assert 'tag' in tags
         assert 'another' in tags
         assert tags['tag'] == 'this is my program'
         assert tags['another'] == 'hi there'
+
+    def test_parses_a_program_with_nested_tags(self):
+        src = """
+        <globals>
+        $display-title$ := On Jibber
+        $title$ := An Essay on the Jibber Jabber
+        $date$ := October 2018
+        </globals>
+
+        <macros>
+        $conversation$ := <div>{}</div>
+        </macros>
+
+        <content>
+        <p> My essay! Yay! </p>
+        <conversation>
+        <p> Great quote, sir. </p>
+        <p> - Albert Einstein </p>
+        </conversation>
+        </content>
+        """
+
+        tags = lexer.scan(src)
+        assert 'globals' in tags
+        assert 'macros' in tags
+        assert 'content' in tags

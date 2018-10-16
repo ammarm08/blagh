@@ -29,7 +29,6 @@ import logging
 
 
 logger = logging.getLogger('Parser')
-logging.basicConfig(level=logging.DEBUG, format="%(name)s:[%(levelname)s]: %(message)s")
 
 
 def parse_assignments(contents):
@@ -98,6 +97,7 @@ def parse(tags={}):
     """
     Parses custom content tags into a dict
     """
+    logger.debug('parse() ->\n %s', repr(tags))
 
     ctx = {
         'macros': {},
