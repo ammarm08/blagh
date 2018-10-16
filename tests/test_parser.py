@@ -1,5 +1,5 @@
 import pytest
-from blagh.parser import parser
+from blagh import parser
 
 class TestParser(object):
 
