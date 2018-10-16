@@ -82,9 +82,9 @@ Blagh files look like this:
 
   This is a conversation:
 
-  <conversation>
+  <$conversation$>
     Hi how are you?
-  </conversation>
+  </$conversation$>
 </content>
 
 <footer>
@@ -191,9 +191,9 @@ So let's rewrite the above example to take advantage of imports.
 
   This is a conversation:
 
-  <conversation>
+  <$conversation$>
     Hi how are you?
-  </conversation>
+  </$conversation$>
 </content>
 
 <footer>

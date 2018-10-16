@@ -1,5 +1,5 @@
 """
-Tokenizes a blagh file into a list of blocks.
+Parses a blagh file into its content tags.
 """
 
 import re
@@ -9,7 +9,6 @@ import logging
 logger = logging.getLogger('Lexer')
 logging.basicConfig(level=logging.DEBUG, format="%(name)s:[%(levelname)s]: %(message)s")
 
-BLOCK_TYPES = { 'imports', 'globals', 'variables', 'macros' }
 
 
 def pipe(*args):

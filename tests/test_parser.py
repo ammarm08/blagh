@@ -1,45 +1,8 @@
 import pytest
-from blagh import parser
+from blagh.parser import parser
 
 class TestParser(object):
 
-
-
-    # Variable Matching/Parsing Tests
-
-
-
-    def test_matches_valid_variable(self):
-        match = parser.match_variable('$name$')
-        assert match
-        assert match.group(1) == '$name$'
-
-    def test_does_not_match_empty_variable(self):
-        match = parser.match_variable('$$')
-        assert match is None
-
-    def test_does_not_match_whitespace_before_variable(self):
-        match = parser.match_variable(' $$')
-        assert match is None
-
-    def test_matches_valid_variable_without_pursuing_text(self):
-        match = parser.match_variable('$name$stuff')
-        assert match
-        assert match.group(1) == '$name$'
-
-    def test_removes_dollar_couching_from_string(self):
-        assert parser.getvarname('$name$') == 'name'
-
-    def test_matches_valid_macro(self):
-        match = parser.match_macro('convo', '<convo> some stuff </convo>\n')
-        assert match
-        assert match.group(1) == '<convo> some stuff </convo>'
-        assert match.group(2) == 'convo'
-        assert match.group(3) == ' some stuff '
-
-    def test_does_not_match_unclosed_macro(self):
-        match = parser.match_macro('convo', '<convo> some stuff')
-        assert match is None
 
 
     # Macro and Variable Validation Tests
@@ -121,31 +84,3 @@ class TestParser(object):
         res = parser.validate_and_parse_tag(ctx, 'foo', custom)
         assert 'custom_tags' in res
         assert 'foo' in res['custom_tags']
-
-
-
-    # Injection and Replacement Tests
-
-
-
-    def test_replaces_variable_with_data_and_zero_offset(self):
-        src = '$name$ is cool'
-        data = 'Ammar'
-        assert parser.replace_variable('$name$', data, src, 0) == 'Ammar is cool'
-
-    def test_replaces_variable_with_data_and_nonzero_offset(self):
-        src = '12345$name$ is cool'
-        data = 'Ammar'
-        offset = 5
-        assert parser.replace_variable('$name$', data, src, offset) == '12345Ammar is cool'
-
-    def test_injects_variable_data_into_string(self):
-        variables = { '$convo$': 'my-convo', '$test$': 'my-test'}
-        src = '<div> $convo$ </div> <li> $test$ </li> $end$'
-
-        expected = '<div> my-convo </div> <li> my-test </li> '
-        assert parser.inject_variables(variables, src) == expected
-
-    def test_injects_variable_and_macro_data_into_string(self):
-        src = '<div> $convo$ </div> <li> $test$ </li> $end$'
-        pass
