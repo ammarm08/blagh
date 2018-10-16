@@ -1,13 +1,10 @@
 # Blagh
 
-Blagh. I want my blog posts to be easier to write. I like reinventing wheels. They are fun. I am new to Python and wanted a good itch to scratch to improve my Python.
+Blagh. I want my blog posts more straightforward to write. I am new to Python and wanted a good itch to scratch to improve my skillz.
 
 The basic idea with `blagh` is this:
-1. write a `.blagh` file.
-2. write a template `.html` file.
-3. inject `.blagh` file data into the template `.html` using a small language called ... `blagh`.
-
-TODO: You can also *import* `.blagh` files into other `.blagh` files. The globals, variables, and macros defined in one will now be available to the file that imported it.
+1. write a `.blagh` file. This contains all your variables.
+2. write a template `.html` file. All your variables get injected here.
 
 See below for the specifics of all this.
 
@@ -23,7 +20,7 @@ See below for the specifics of all this.
 # Usage
 
 ```bash
-blagh --data your-blog-post.blagh --template your-template.html
+blagh --file your-blog-post.blagh --template your-template.html
 ```
 
 This will produce a folder with your blog post's filename and an index.html
@@ -81,9 +78,9 @@ Blagh files look like this:
 
   This is a conversation:
 
-  <$conversation$>
+  <conversation>
     Hi how are you?
-  </$conversation$>
+  </conversation>
 </content>
 
 <footer>
@@ -93,11 +90,11 @@ Blagh files look like this:
 
 ## Globals
 
-These are dollar-sign-couched keywords accessed *only* in the template HTML file.
+These are accessible *only* in the template HTML file.
 
 ## Variables
 
-These are dollar-sign-couched keywords that can only be accessed in custom content blocks (ie, blocks that aren't globals, variables, or macros)
+These are accessible *only* in custom content tags (ie, tags that aren't globals, variables, or macros)
 
 ## Macros
 
@@ -110,15 +107,15 @@ TODO: This is not implemented yet.
 You can import globals, variables, and macros from another `.blagh` file. See the "Importing Blagh Files" section for more.
 
 
-## Custom Content Blocks
+## Custom Content Tags
 
-This is what gets compiled by `blagh` and injected into your template HTML's `$content$` or `$footer` or `$name-your-block$` areas.
+This is what gets compiled by `blagh` and injected into your template HTML's `$content$` or `$footer` or `$name-your-tag$` areas.
 
-You can name these blocks whatever you want. You can create blocks in your `.blagh` file by simply doing the following:
+You can name these tags whatever you want. You can create tags in your `.blagh` file by simply doing the following:
 
 ```
-<a-block>
-</a-block>
+<a-tag>
+</a-tag>
 ```
 
 
@@ -149,15 +146,15 @@ The above sample `.blagh` and template `.html` files will produce the following 
 This will exist in `my-awesome-blog-post/index.html`.
 
 
-# Importing Blagh Files
+# TODO: Importing Blagh Files
 
-TODO: Not implemented yet!
+Not implemented yet!
 
 As mentioned above, you can also *import* `.blagh` files into other `.blagh` files. The globals, variables, and macros defined in one will now be available to the file that imported it.
 
 This is very useful because if your blog makes repeated use of certain variables or HTML macros, you just need to create one `.blagh` file and import it when writing your blog posts.
 
-Note: *only* the `<macros>`, `<globals>`, and `<variables>` blocks are ever imported.
+Note: *only* the `<macros>`, `<globals>`, and `<variables>` tags are ever imported.
 
 So let's rewrite the above example to take advantage of imports.
 
@@ -188,9 +185,9 @@ So let's rewrite the above example to take advantage of imports.
 
   This is a conversation:
 
-  <$conversation$>
+  <conversation>
     Hi how are you?
-  </$conversation$>
+  </conversation>
 </content>
 
 <footer>
@@ -208,5 +205,3 @@ You can import multiple files! For instance, you could break up your macros into
 ```
 
 These will be imported in the order they are listed. Name conflicts will result in a compile error. Names are scoped to block type. You cannot have name reassignment.
-
-That is, all globals need to have unique names, and all variables need to have unique names, but there can be a variable `$title$` and a global `$title$`. Because they are operating on different scopes (one on the content section and the other on the template html), they will not conflict and thus there's no compile error.
