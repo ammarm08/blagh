@@ -169,7 +169,7 @@ def expand_macro(ctx):
 
     # call expand_macros() in case this injected data can itself be expanded
     # example: "<foo> this </foo>" where foo is a macro
-    fully_expanded_content_to_inject = expand_macros(macros, content_to_inject)
+    fully_expanded_content_to_inject = expand_macros(macros, content_to_inject.lstrip().rstrip())
 
     # macro_expansion looks like "<div> {} <div>", which means
     # we can directly use Python string interpolation
@@ -179,7 +179,7 @@ def expand_macro(ctx):
 
     # call expand_macros() in case the TARGET data is not fully expanded.
     # example: the key "$convo$" might point to a target "<foo>{}</foo>" where foo is another macro
-    fully_expanded_target = expand_macros(macros, target)
+    fully_expanded_target = expand_macros(macros, target.lstrip().rstrip())
 
     ctx['macro_expansion'] = fully_expanded_target.format(fully_expanded_content_to_inject)
     content_to_replace = '<' + current_macro + '>' + content_to_inject + '</' + current_macro + '>'
@@ -226,13 +226,14 @@ def expand_macros(macros, contents):
                 advance_to_next_macro
                 )(memo)
 
-        # logger.debug('expand_macros() -> %s', repr(memo))
+        logger.debug('expand_macros() -> %s', repr(memo))
 
     return memo['contents']
 
 
 def inject_data_into_content(ctx, contents):
     """injects variables then macros into contents"""
+    contents = re.sub('\s+', ' ', contents)
     contents = expand_variables(ctx['variables'], contents)
     contents = expand_macros(ctx['macros'], contents)
     return contents

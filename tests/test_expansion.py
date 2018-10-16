@@ -100,3 +100,67 @@ class TestParser(object):
 
         expected = '<li><p>is this</p></li>'
         assert expansion.expand_macros(macros, src) == expected
+
+    def test_full_variable_and_macro_expansion_on_one_content_tag(self):
+        tags = {
+            'variables': {
+                '$title$': 'My Blog',
+                '$author$': 'Ammar'
+            },
+            'macros': {
+                '$conversation$': '<li><foo>{}</foo></li>',
+                '$foo$': '<p>{}</p>',
+                '$true$': '<ul>{}</ul>'
+            }
+        }
+
+        src = """$title$, by $author$
+        <true>
+        <conversation>
+        Yo
+        </conversation>
+        </true>"""
+
+        expected = 'My Blog, by Ammar <ul><li><p>Yo</p></li></ul>'
+        assert expansion.inject_data_into_content(tags, src) == expected
+
+    def test_full_variable_and_macro_expansion_on_multiple_content_tags(self):
+        src = """$title$, by $author$
+        <true>
+        <conversation>
+        Yo
+        </conversation>
+        </true>"""
+
+        footer = '<true><li>$author$</li></true>'
+
+
+        tags = {
+            'variables': {
+                '$title$': 'My Blog',
+                '$author$': 'Ammar'
+            },
+            'macros': {
+                '$conversation$': '<li><foo>{}</foo></li>',
+                '$foo$': '<p>{}</p>',
+                '$true$': '<ul>{}</ul>'
+            },
+            'custom_tags': {
+                'content': src,
+                'footer': footer
+            }
+        }
+
+
+
+        expected_1 = 'My Blog, by Ammar <ul><li><p>Yo</p></li></ul>'
+        expected_2 = '<ul><li>Ammar</li></ul>'
+
+        ctx = expansion.expand(tags)
+        assert ctx
+        assert 'custom_tags' in ctx
+        assert 'content' in ctx['custom_tags']
+        assert 'footer' in ctx['custom_tags']
+
+        assert ctx['custom_tags']['content'] == expected_1
+        assert ctx['custom_tags']['footer'] == expected_2
