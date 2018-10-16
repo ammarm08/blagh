@@ -32,12 +32,12 @@ def match_variable(contents):
 
 def match_macro_open(contents):
     """matches for any opening <{tag_name}>"""
-    return re.match('(<(.+)>).+', contents)
+    return re.match('<(.+)>.+', contents)
 
 
 def match_macro_close(name, contents):
     """matches for a specific closing </{name}>"""
-    return re.match('(.+)(<\/{name}>).?'.format(name=re.escape(name)), contents)
+    return re.match('(.+)<\/({name})>.?'.format(name=re.escape(name)), contents)
 
 
 def getvarname(variable):
@@ -114,48 +114,99 @@ def expand_variables(variables, contents):
     return memo['contents']
 
 
+def find_opening_macro_tag(ctx):
+    """wrapper for match_macro_open() that updates ctx object"""
+    contents = ctx['contents']
+    offset = ctx['offset']
+
+    macromatch = match_macro_open(contents[offset:])
+    if macromatch is not None:
+        ctx['current_macro'] = macromatch.group(1)
+    else:
+        ctx['current_macro'] = None
+
+    return ctx
+
+
+def find_closing_macro_tag(ctx):
+    """wrapper for match_macro_close() that updates ctx object"""
+    current_macro = ctx['current_macro']
+    if current_macro is None:
+        return ctx
+
+    # find the current macro's required closing tag (find the subset beyond opening tag)
+    subset = ctx['contents'][len('<' + current_macro + '>'):]
+    macro_close_match = match_macro_close(current_macro, subset)
+    if not macro_close_match or macro_close_match.group(2) != current_macro:
+        raise Exception('Improperly closed macro "{macro}"'.format(macro=current_macro))
+
+    # update ctx with the actual content that will be injected in the expanded macro
+    ctx['content_to_inject'] = macro_close_match.group(1)
+
+    return ctx
+
+
+def expand_macro(ctx):
+    """looks up macro in macros table, injects desired content, then performs macro expansion"""
+
+    macros = ctx['macros']
+    current_macro = ctx['current_macro']
+    content_to_inject = ctx['content_to_inject']
+    contents = ctx['contents']
+    offset = ctx['offset']
+
+
+    if current_macro is None:
+        ctx['macro_expansion'] = None
+        return ctx
+
+    # macro_expansion looks like "<div> {} <div>", which means
+    # we can directly use Python string interpolation
+
+    target = macros[current_macro] if current_macro in macros else ''
+    ctx['macro_expansion'] = target.format(content_to_inject)
+    content_to_replace = '<' + current_macro + '>' + content_to_inject + '</' + current_macro + '>'
+
+    # now that we've built up the fully expanded macro, time to replace the old content
+
+    ctx['contents'] = replace_variable(content_to_replace, ctx['macro_expansion'], contents, offset)
+
+    return ctx
+
+
+def advance_to_next_macro(ctx):
+    """advances offset so we can continue expanding macros we encounter"""
+    if ctx['macro_expansion'] is None:
+        ctx['offset'] += 1
+    else:
+        new_offset = len(ctx['macro_expansion'])
+        ctx['offset'] += new_offset
+
+    return ctx
+
+
 
 def expand_macros(macros, contents):
     """replaces all $macros$ in contents with their corresponding {} data"""
 
-    # iteratively matches for <macro-name>{}</macro-name>, replaces with data,
-    # then updates offset pointer until it exceeds length of contents
-    offset = 0
+    memo = {
+        'offset': 0,
+        'current_macro': None,
+        'content_to_inject': None,
+        'macro_expansion': None,
+        'contents': contents,
+        'macros': macros
+    }
 
-    while offset < len(contents):
-        macro_match = match_macro_open(contents[offset:])
+    while memo['offset'] < len(contents):
+        memo = pipe(
+                find_opening_macro_tag,
+                find_closing_macro_tag,
+                expand_macro,
+                advance_to_next_macro
+                )(memo)
 
-        if macro_match is not None:
-            macro_opener = macro_match.group(1)     # <$macro$>
-            macro_name = macro_match.group(2)       # $macro$
-
-            macro_close_match = match_macro_close(macro_name, contents[offset + len(macro_opener):])
-            if macro_close_match is None:
-                raise Exception('Expected closure of macro "%s" in contents "%s"', macro_name, contents[offset + len(macro_opener):])
-
-            macro_content = macro_close_match.group(1)
-            macro_closure = macro_close_match.group(2)
-
-            # TODO: recursive expansion on macro_content to support nested macros
-            # expanded_macro_content = expand_macros(macros, macro_content)
-
-            # expand! <convo>{}</convo> becomes <div>your-content</div>
-            data = macros[macro_name] if macro_name in macros else ''
-            full_expansion = data.format(macro_content)
-
-            # TODO: recurse: full expansion may yield nested expansions
-            # expanded_expansion = expand_macros(macros, full_expansion)
-
-            # replace old, unexpanded text with new, expanded text. increment offset accordingly
-            unexpanded = macro_opener + macro_content + macro_closure
-            contents = replace_variable(unexpanded, full_expansion, contents, offset)
-            offset += len(full_expansion)
-
-            logger.debug('expand_macros() -> Contents: %s, offset: %d, macro: %s, data: %s', contents, offset, macro_name, data)
-
-        offset += 1
-
-    return contents
+    return memo['contents']
 
 
 def inject_data_into_content(ctx, contents):

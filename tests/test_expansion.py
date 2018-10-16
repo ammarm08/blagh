@@ -33,8 +33,7 @@ class TestParser(object):
     def test_matches_valid_macro_opening(self):
         match = expansion.match_macro_open('<convo> some stuff </convo>\n')
         assert match
-        assert match.group(1) == '<convo>'
-        assert match.group(2) == 'convo'
+        assert match.group(1) == 'convo'
 
     def test_does_not_match_valid_macro_opening(self):
         match = expansion.match_macro_open(' <convo> some stuff </convo>\n')
@@ -44,7 +43,7 @@ class TestParser(object):
         match = expansion.match_macro_close('convo', 'foofoofoo</convo>\n')
         assert match
         assert match.group(1) == 'foofoofoo'
-        assert match.group(2) == '</convo>'
+        assert match.group(2) == 'convo'
 
     def test_does_not_match_unclosed_macro(self):
         match = expansion.match_macro_close('convo', 'some stuff</notconvo>')
