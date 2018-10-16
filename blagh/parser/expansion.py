@@ -13,6 +13,19 @@ logger = logging.getLogger('Expansion')
 logging.basicConfig(level=logging.DEBUG, format="%(name)s:[%(levelname)s]: %(message)s")
 
 
+def pipe(*args):
+    """
+    Returns a function that applies an initial value to a list of
+    functions, returning the accumulated value.
+    """
+    def run(sentinel=0):
+        for fn in args:
+            sentinel = fn(sentinel)
+        return sentinel
+
+    return run
+
+
 def match_variable(contents):
     return re.match('(\$\w+\$)', contents)
 
@@ -37,31 +50,68 @@ def replace_variable(name, data, contents, offset):
     return contents[:offset] + data + contents[offset + len(name):]
 
 
+def find_variable(ctx):
+    """wrapper for match_variable() that updates ctx object"""
+    contents = ctx['contents']
+    offset = ctx['offset']
+
+    varmatch = match_variable(contents[offset:])
+    if varmatch:
+        ctx['current_variable'] = varmatch.group(1)
+    else:
+        ctx['current_variable'] = None
+
+    return ctx
+
+
+def expand_variable(ctx):
+    """if variable found, look up its expansion content and inject into contents"""
+
+    current_variable = ctx['current_variable']
+    variables = ctx['variables']
+    contents = ctx['contents']
+    offset = ctx['offset']
+
+    if current_variable is None:
+        ctx['expanded_variable'] = None
+    else:
+        ctx['expanded_variable'] = variables[current_variable] if current_variable in variables else ''
+        ctx['contents'] = replace_variable(current_variable, ctx['expanded_variable'], contents, offset)
+
+    return ctx
+
+
+def advance_to_next_variable(ctx):
+    """adjust offset by injected data's length or by 1 if no match found"""
+    if ctx['expanded_variable'] is not None:
+        ctx['offset'] += len(ctx['expanded_variable']) + 1
+    else:
+        ctx['offset'] += 1
+
+    return ctx
 
 
 def expand_variables(variables, contents):
     """replaces all $variables$ in contents with their corresponding data"""
 
-    # iteratively matches for $variable-name$, replaces with data,
-    # then updates offset pointer until it exceeds length of contents
-    offset = 0
+    memo = {
+        'offset': 0,
+        'current_variable': None,
+        'expanded_variable': None,
+        'contents': contents,
+        'variables': variables
+    }
 
-    while offset < len(contents):
-        varmatch = match_variable(contents[offset:])
+    while memo['offset'] < len(contents):
+        memo = pipe(
+                find_variable,
+                expand_variable,
+                advance_to_next_variable
+                )(memo)
 
-        if varmatch is not None:
-            varname = varmatch.group(1)
-            data = variables[varname] if varname in variables else ''
+        logger.debug('expand_variables() -> %s', repr(memo))
 
-            # replace $title$ with data (such as "My Blog Title")
-            contents = replace_variable(varname, data, contents, offset)
-            offset += len(data)
-
-            logger.debug('expand_variables() -> Contents: %s, offset: %d, var: %s, data: %s', contents, offset, varname, data)
-
-        offset += 1
-
-    return contents
+    return memo['contents']
 
 
 
@@ -118,7 +168,9 @@ def inject_data_into_content(ctx, contents):
 
 def expand(ctx={}):
     """
-    Handles variable and macro expansion into content tags
+    Handles variable and macro expansion into content tags.
+    Input must be a dict of parsed macros, variables, globals,
+    and custom content tags.
     """
 
     # inject macros and variables into custom content tags
