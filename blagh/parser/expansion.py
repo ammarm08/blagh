@@ -41,8 +41,8 @@ def match_macro_close(name, contents):
 
 
 def getvarname(variable):
-    """get varname from $varname$"""
-    return variable[1:-1]
+    """get $varname$ from varname"""
+    return '$' + variable + '$'
 
 
 def replace_variable(name, data, contents, offset):
@@ -125,7 +125,7 @@ def find_opening_macro_tag(ctx):
         return ctx
 
     macro_name = macromatch.group(1)
-    if '$' + macro_name + '$' in ctx['macros']:
+    if getvarname(macro_name) in ctx['macros']:
         ctx['current_macro'] = macro_name
     else:
         ctx['current_macro'] = None
@@ -147,8 +147,9 @@ def find_closing_macro_tag(ctx):
     if not macro_close_match or macro_close_match.group(2) != current_macro:
         raise Exception('Improperly closed macro "{macro}"'.format(macro=current_macro))
 
-    # update ctx with the actual content that will be injected in the expanded macro
+    # update ctx with the actual content that will be injected in the expanded macro.
     ctx['content_to_inject'] = macro_close_match.group(1)
+
     return ctx
 
 
@@ -166,13 +167,21 @@ def expand_macro(ctx):
         ctx['macro_expansion'] = None
         return ctx
 
+    # call expand_macros() in case this injected data can itself be expanded
+    # example: "<foo> this </foo>" where foo is a macro
+    fully_expanded_content_to_inject = expand_macros(macros, content_to_inject)
+
     # macro_expansion looks like "<div> {} <div>", which means
     # we can directly use Python string interpolation
 
-    key = '$' + current_macro + '$'
+    key = getvarname(current_macro)
     target = macros[key] if key in macros else ''
 
-    ctx['macro_expansion'] = target.format(content_to_inject)
+    # call expand_macros() in case the TARGET data is not fully expanded.
+    # example: the key "$convo$" might point to a target "<foo>{}</foo>" where foo is another macro
+    fully_expanded_target = expand_macros(macros, target)
+
+    ctx['macro_expansion'] = fully_expanded_target.format(fully_expanded_content_to_inject)
     content_to_replace = '<' + current_macro + '>' + content_to_inject + '</' + current_macro + '>'
 
     # now that we've built up the fully expanded macro, time to replace the old content
@@ -217,7 +226,7 @@ def expand_macros(macros, contents):
                 advance_to_next_macro
                 )(memo)
 
-        logger.debug('expand_macros() -> %s', repr(memo))
+        # logger.debug('expand_macros() -> %s', repr(memo))
 
     return memo['contents']
 

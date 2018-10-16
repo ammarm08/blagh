@@ -27,8 +27,8 @@ class TestParser(object):
         assert match
         assert match.group(1) == '$name$'
 
-    def test_removes_dollar_couching_from_string(self):
-        assert expansion.getvarname('$name$') == 'name'
+    def test_adds_dollar_couching_to_string(self):
+        assert expansion.getvarname('name') == '$name$'
 
     def test_matches_valid_macro_opening(self):
         match = expansion.match_macro_open('<convo> some stuff </convo>\n')
@@ -85,4 +85,18 @@ class TestParser(object):
         src = '<conversation>what</conversation><foo>is this</foo>'
 
         expected = '<li>what</li><p>is this</p>'
+        assert expansion.expand_macros(macros, src) == expected
+
+    def test_expands_multiple_macros_into_string_recursively_from_src(self):
+        macros = { '$conversation$': '<li>{}</li>', '$foo$': '<p>{}</p>' }
+        src = '<conversation><foo>is this</foo></conversation>'
+
+        expected = '<li><p>is this</p></li>'
+        assert expansion.expand_macros(macros, src) == expected
+
+    def test_expands_multiple_macros_into_string_recursively_from_macro(self):
+        macros = { '$conversation$': '<li><foo>{}</foo></li>', '$foo$': '<p>{}</p>' }
+        src = '<conversation>is this</conversation>'
+
+        expected = '<li><p>is this</p></li>'
         assert expansion.expand_macros(macros, src) == expected
