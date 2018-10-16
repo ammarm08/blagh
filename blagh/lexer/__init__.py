@@ -31,7 +31,7 @@ def advance(src, n):
 
 def match_open_tag(src):
     """matches for any opening <{tag_name}>"""
-    return re.match('<(.+)>.+', src)
+    return re.match('<(\w+)>.+', src)
 
 
 def match_close_tag(tag, src):

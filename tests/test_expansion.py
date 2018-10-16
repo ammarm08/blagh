@@ -75,14 +75,14 @@ class TestParser(object):
 
     def test_expands_macro_data_into_string(self):
         macros = { '$conversation$': '<li>{}</li>' }
-        src = '<$conversation$>what</$conversation$>'
+        src = '<conversation>what</conversation>'
 
         expected = '<li>what</li>'
         assert expansion.expand_macros(macros, src) == expected
 
     def test_expands_multiple_macros_into_string(self):
         macros = { '$conversation$': '<li>{}</li>', '$foo$': '<p>{}</p>' }
-        src = '<$conversation$>what</$conversation$><$foo$>is this</$foo$>'
+        src = '<conversation>what</conversation><foo>is this</foo>'
 
         expected = '<li>what</li><p>is this</p>'
         assert expansion.expand_macros(macros, src) == expected

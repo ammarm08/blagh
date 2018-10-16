@@ -32,12 +32,12 @@ def match_variable(contents):
 
 def match_macro_open(contents):
     """matches for any opening <{tag_name}>"""
-    return re.match('<(.+)>.+', contents)
+    return re.match('<(\w+)>.+', contents)
 
 
 def match_macro_close(name, contents):
     """matches for a specific closing </{name}>"""
-    return re.match('(.+)<\/({name})>.?'.format(name=re.escape(name)), contents)
+    return re.match('(.+)<\/({name})>.?'.format(name=name), contents)
 
 
 def getvarname(variable):
@@ -120,8 +120,13 @@ def find_opening_macro_tag(ctx):
     offset = ctx['offset']
 
     macromatch = match_macro_open(contents[offset:])
-    if macromatch is not None:
-        ctx['current_macro'] = macromatch.group(1)
+    if macromatch is None:
+        ctx['current_macro'] = None
+        return ctx
+
+    macro_name = macromatch.group(1)
+    if '$' + macro_name + '$' in ctx['macros']:
+        ctx['current_macro'] = macro_name
     else:
         ctx['current_macro'] = None
 
@@ -130,19 +135,20 @@ def find_opening_macro_tag(ctx):
 
 def find_closing_macro_tag(ctx):
     """wrapper for match_macro_close() that updates ctx object"""
+
     current_macro = ctx['current_macro']
     if current_macro is None:
         return ctx
 
     # find the current macro's required closing tag (find the subset beyond opening tag)
-    subset = ctx['contents'][len('<' + current_macro + '>'):]
+    subset = ctx['contents'][ctx['offset'] + len('<' + current_macro + '>'):]
+
     macro_close_match = match_macro_close(current_macro, subset)
     if not macro_close_match or macro_close_match.group(2) != current_macro:
         raise Exception('Improperly closed macro "{macro}"'.format(macro=current_macro))
 
     # update ctx with the actual content that will be injected in the expanded macro
     ctx['content_to_inject'] = macro_close_match.group(1)
-
     return ctx
 
 
@@ -163,7 +169,9 @@ def expand_macro(ctx):
     # macro_expansion looks like "<div> {} <div>", which means
     # we can directly use Python string interpolation
 
-    target = macros[current_macro] if current_macro in macros else ''
+    key = '$' + current_macro + '$'
+    target = macros[key] if key in macros else ''
+
     ctx['macro_expansion'] = target.format(content_to_inject)
     content_to_replace = '<' + current_macro + '>' + content_to_inject + '</' + current_macro + '>'
 
@@ -181,6 +189,9 @@ def advance_to_next_macro(ctx):
     else:
         new_offset = len(ctx['macro_expansion'])
         ctx['offset'] += new_offset
+
+    # reset some context variables
+    ctx['current_macro'] = ctx['content_to_inject'] = ctx['macro_expansion'] = None
 
     return ctx
 
@@ -205,6 +216,8 @@ def expand_macros(macros, contents):
                 expand_macro,
                 advance_to_next_macro
                 )(memo)
+
+        logger.debug('expand_macros() -> %s', repr(memo))
 
     return memo['contents']
 
