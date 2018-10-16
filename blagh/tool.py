@@ -57,7 +57,9 @@ def write_file(path, contents):
 
 def sluggify(title):
     """creates a slug from a title -- lowercased and dash-delimited"""
-    return re.sub(r"(\s+)", "-", title.lower())
+    slugged = re.sub(r"(\s+)", "-", title.lower())
+    stripped = re.sub(r"(\..*)", "", slugged)
+    return stripped
 
 
 def write_blog_post(html, dirname):

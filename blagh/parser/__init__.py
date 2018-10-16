@@ -35,10 +35,10 @@ def parse_assignments(contents):
     """parses variable assignment: name := value \n"""
     # split on \n and := to parse assignments
     lines = contents.split('\n')
-    assignments = map(lambda x: re.sub(r'\s+', '', x).split(':='), lines)
+    assignments = [ re.sub(r'[\n\t]', '', x).split(':=') for x in lines ]
 
-    # only keep pairs!
-    return [ pair for pair in assignments if len(pair) == 2 ]
+    # strip trailing whitespace. only keep pairs
+    return [ [ pair[0].lstrip().rstrip(), pair[1].lstrip().rstrip() ] for pair in assignments if len(pair) == 2 ]
 
 
 def validate_one_macro(name, value, macros):
