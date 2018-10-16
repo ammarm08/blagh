@@ -7,7 +7,7 @@ The basic idea with `blagh` is this:
 2. write a template `.html` file.
 3. inject `.blagh` file data into the template `.html` using a small language called ... `blagh`.
 
-You can also *import* `.blagh` files into other `.blagh` files. The globals, variables, and macros defined in one will now be available to the file that imported it.
+TODO: You can also *import* `.blagh` files into other `.blagh` files. The globals, variables, and macros defined in one will now be available to the file that imported it.
 
 See below for the specifics of all this.
 
@@ -17,8 +17,7 @@ See below for the specifics of all this.
 2. [ Writing Templates ](#writing-templates)
 3. [ Writing Blagh Files ](#writing-blagh-files)
 4. [ Sample Output ](#sample-output)
-5. [ Importing Blagh Files ](#importing-blagh-files)
-6. [ Standard Library of Macros ](#standard-library-of-macros)
+5. [ TODO: Importing Blagh Files ](#importing-blagh-files)
 
 
 # Usage
@@ -28,7 +27,7 @@ blagh --data your-blog-post.blagh --template your-template.html
 ```
 
 This will produce a folder with your blog post's filename and an index.html
-with your data injected into a copy of the template html.
+with your compiled html.
 
 
 # Writing Templates
@@ -61,8 +60,8 @@ for areas you want to inject data into. The way that they are used will be discu
 Blagh files look like this:
 
 ```
+// TODO: implement imports
 <imports>
-  $stlib$
 </imports>
 
 <globals>
@@ -106,9 +105,10 @@ These are dollar-sign-couched keywords that help you create custom HTML elements
 
 ## Imports
 
+TODO: This is not implemented yet.
+
 You can import globals, variables, and macros from another `.blagh` file. See the "Importing Blagh Files" section for more.
 
-*Note*: `blagh` provides you with an `stlib` that you can import. This will provide you with all HTML tags as macros for your use in custom content blocks.
 
 ## Custom Content Blocks
 
@@ -120,10 +120,6 @@ You can name these blocks whatever you want. You can create blocks in your `.bla
 <a-block>
 </a-block>
 ```
-
-And you can then reference this block in your template html as `$a-block$`.
-
-By default, if a chunk of text does not have a macro encapsulating it, it will be treated as a paragraph element.
 
 
 # Sample Output
@@ -155,6 +151,8 @@ This will exist in `my-awesome-blog-post/index.html`.
 
 # Importing Blagh Files
 
+TODO: Not implemented yet!
+
 As mentioned above, you can also *import* `.blagh` files into other `.blagh` files. The globals, variables, and macros defined in one will now be available to the file that imported it.
 
 This is very useful because if your blog makes repeated use of certain variables or HTML macros, you just need to create one `.blagh` file and import it when writing your blog posts.
@@ -182,7 +180,6 @@ So let's rewrite the above example to take advantage of imports.
 `my-blog-post.blagh`:
 ```
 <imports>
-  $stlib$
   $variables$
 </imports>
 
@@ -213,8 +210,3 @@ You can import multiple files! For instance, you could break up your macros into
 These will be imported in the order they are listed. Name conflicts will result in a compile error. Names are scoped to block type. You cannot have name reassignment.
 
 That is, all globals need to have unique names, and all variables need to have unique names, but there can be a variable `$title$` and a global `$title$`. Because they are operating on different scopes (one on the content section and the other on the template html), they will not conflict and thus there's no compile error.
-
-
-# Standard Library of Macros
-
-TODO: write the macros stlib
