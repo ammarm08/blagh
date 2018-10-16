@@ -39,7 +39,7 @@ def parse_assignments(contents):
     assignments = map(lambda x: re.sub(r'\s+', '', x).split(':='), lines)
 
     # only keep pairs!
-    return filter(lambda x: len(x) == 2, assignments)
+    return [ pair for pair in assignments if len(pair) == 2 ]
 
 
 def validate_one_macro(name, value, macros):
