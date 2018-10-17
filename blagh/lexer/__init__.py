@@ -7,7 +7,6 @@ import logging
 
 
 logger = logging.getLogger('Lexer')
-logging.basicConfig(level=logging.DEBUG)
 
 
 def pipe(*args):
@@ -106,7 +105,7 @@ def scan(program):
     }
 
     while len(ctx['source']) > 0:
-        logger.debug('scan() ->\n parsing ctx: %s', repr(ctx))
+        logger.info('scan() ->\n parsing ctx: %s', repr(ctx))
 
         # runs pipeline of functions in order, transforming ctx in the process
         ctx = pipe(

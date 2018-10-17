@@ -103,7 +103,7 @@ def expand_variables(variables, contents):
     }
 
     while memo['offset'] < len(contents):
-        logger.debug('expand_variables() ->\n %s', repr(memo))
+        logger.info('expand_variables() ->\n %s', repr(memo))
 
         memo = pipe(
                 find_variable,
@@ -178,7 +178,7 @@ def expand_macro(ctx):
     target = macros[key] if key in macros else ''
 
     # call expand_macros() in case the TARGET data is not fully expanded.
-    # example: the key "$convo$" might point to a target "<foo>{}</foo>" where foo is another macro
+    # example: the key "$convo$" might point to a value "<foo>{}</foo>" where foo is another macro to be expanded
     fully_expanded_target = expand_macros(macros, target.lstrip().rstrip())
 
     ctx['macro_expansion'] = fully_expanded_target.format(fully_expanded_content_to_inject)
@@ -219,7 +219,7 @@ def expand_macros(macros, contents):
     }
 
     while memo['offset'] < len(contents):
-        logger.debug('expand_macros() ->\n %s', repr(memo))
+        logger.info('expand_macros() ->\n %s', repr(memo))
 
         memo = pipe(
                 find_opening_macro_tag,
@@ -246,7 +246,7 @@ def expand(ctx={}):
     Input must be a dict of parsed macros, variables, globals,
     and custom content tags.
     """
-    logger.debug('expand() ->\n%s', repr(ctx))
+    logger.info('expand() ->\n%s', repr(ctx))
 
     # inject macros and variables into custom content tags
     custom_tags = ctx['custom_tags']

@@ -64,12 +64,12 @@ def sluggify(title):
 
 def write_blog_post(html, dirname):
     """ mkdir() and touch() the blog post """
-    LOGGER.debug("write_blog_post() -> writing %s", dirname)
+    LOGGER.info("write_blog_post() -> writing %s", dirname)
 
     create_directory(dirname)
     write_file(dirname + "/index.html", html)
 
-    LOGGER.debug("write_blog_post() -> successfully wrote %s", dirname)
+    LOGGER.info("write_blog_post() -> successfully wrote %s", dirname)
 
 
 def parse_arguments():

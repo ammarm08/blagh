@@ -97,7 +97,7 @@ def parse(tags={}):
     """
     Parses custom content tags into a dict
     """
-    logger.debug('parse() ->\n %s', repr(tags))
+    logger.info('parse() ->\n %s', repr(tags))
 
     ctx = {
         'macros': {},
