@@ -64,7 +64,7 @@ def find_closing_tag(ctx):
     subset = ctx['source'][ctx['cursor_advance']:]
     closing_tag_match = match_close_tag(current_tag, subset)
     if not closing_tag_match or closing_tag_match.group(2) != current_tag:
-        raise Exception('Improperly closed tag "{tag}"'.format(tag=current_tag))
+        raise Exception('Improperly closed tag "{tag}" at location {loc} ("{str}")'.format(tag=current_tag, loc=ctx['cursor_advance'], str=ctx['contents'][ctx['cursor_advance':]]))
 
     # advance cursor by length of tag contents and closing tag
     ctx['tag_contents'] = closing_tag_match.group(1)
@@ -105,7 +105,7 @@ def scan(program):
     }
 
     while len(ctx['source']) > 0:
-        logger.info('scan() ->\n parsing ctx: %s', repr(ctx))
+        logger.info('scan() ->\n parsing ctx: %s', repr(( ctx['cursor_advance'], ctx['source'], ctx['current_tag'] )))
 
         # runs pipeline of functions in order, transforming ctx in the process
         ctx = pipe(

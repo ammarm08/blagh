@@ -37,7 +37,7 @@ def match_macro_open(contents):
 
 def match_macro_close(name, contents):
     """matches for a specific closing </{name}>"""
-    pattern = re.compile('(.+)<\/({name})>.?'.format(name=name), re.DOTALL)
+    pattern = re.compile('(.+?)<\/({name})>.?'.format(name=name), re.DOTALL)
     return pattern.match(contents)
 
 def getvarname(variable):
@@ -103,7 +103,7 @@ def expand_variables(variables, contents):
     }
 
     while memo['offset'] < len(contents):
-        logger.info('expand_variables() ->\n %s', repr(memo))
+        logger.info('expand_variables() ->\n %s', repr(( memo['offset'], memo['current_variable'] )))
 
         memo = pipe(
                 find_variable,
@@ -119,6 +119,8 @@ def find_opening_macro_tag(ctx):
     contents = ctx['contents']
     offset = ctx['offset']
 
+    logger.info('1. Matching opening tag of any macro at offset %d: %s', offset, contents[offset] if offset < len(contents) else '')
+
     macromatch = match_macro_open(contents[offset:])
     if macromatch is None:
         ctx['current_macro'] = None
@@ -126,6 +128,7 @@ def find_opening_macro_tag(ctx):
 
     macro_name = macromatch.group(1)
     if getvarname(macro_name) in ctx['macros']:
+        logger.info('1. Matched opening tag of macro: %s', macro_name)
         ctx['current_macro'] = macro_name
     else:
         ctx['current_macro'] = None
@@ -141,11 +144,15 @@ def find_closing_macro_tag(ctx):
         return ctx
 
     # find the current macro's required closing tag (find the subset beyond opening tag)
+    logger.info('2. Matching closing tag of macro: %s', current_macro)
     subset = ctx['contents'][ctx['offset'] + len('<' + current_macro + '>'):]
 
     macro_close_match = match_macro_close(current_macro, subset)
     if not macro_close_match or macro_close_match.group(2) != current_macro:
-        raise Exception('Improperly closed macro "{macro}"'.format(macro=current_macro))
+        logger.debug('find_closing_macro_tag() -> ERROR TRACE: \n%s', repr(ctx))
+        raise Exception('Improperly closed macro "{macro}" in subset "{subset}"'.format(macro=current_macro, subset=subset))
+
+    logger.info('2. Matched closing tag of macro: %s', current_macro)
 
     # update ctx with the actual content that will be injected in the expanded macro.
     ctx['content_to_inject'] = macro_close_match.group(1)
@@ -166,6 +173,8 @@ def expand_macro(ctx):
     if current_macro is None:
         ctx['macro_expansion'] = None
         return ctx
+
+    logger.info('3. Expanding macro %s with content "%s"', current_macro, content_to_inject)
 
     # call expand_macros() in case this injected data can itself be expanded
     # example: "<foo> this </foo>" where foo is a macro
@@ -188,11 +197,16 @@ def expand_macro(ctx):
 
     ctx['contents'] = replace_variable(content_to_replace, ctx['macro_expansion'], contents, offset)
 
+    logger.info('3. Expanded macro %s: "%s"', current_macro, fully_expanded_content_to_inject)
+
     return ctx
 
 
 def advance_to_next_macro(ctx):
     """advances offset so we can continue expanding macros we encounter"""
+
+    logger.info('4. Advancing to next macro')
+
     if ctx['macro_expansion'] is None:
         ctx['offset'] += 1
     else:
@@ -219,8 +233,6 @@ def expand_macros(macros, contents):
     }
 
     while memo['offset'] < len(contents):
-        logger.info('expand_macros() ->\n %s', repr(memo))
-
         memo = pipe(
                 find_opening_macro_tag,
                 find_closing_macro_tag,
@@ -246,7 +258,6 @@ def expand(ctx={}):
     Input must be a dict of parsed macros, variables, globals,
     and custom content tags.
     """
-    logger.info('expand() ->\n%s', repr(ctx))
 
     # inject macros and variables into custom content tags
     custom_tags = ctx['custom_tags']

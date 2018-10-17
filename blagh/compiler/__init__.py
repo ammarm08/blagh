@@ -61,7 +61,7 @@ def compile(tags={}, html=''):
     injecting global variables and content sections
     as necessary
     """
-    logging.info('compile() ->\n tags: %s\nhtml: %s', repr(tags), html)
+    logger.info('compile() ->\n tags: %s\nhtml: %s', repr(tags), html)
 
     html = compile_globals(html, tags['globals'])
     html = compile_content(html, tags['custom_tags'])
