@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>$title$ - $author$</title>
+  </head>
+  <body>
+    <div class="main">
+      $content$
+    </div>
+    <footer>
+      $credits$
+    </footer>
+
+  </body>
+</html>
+
+<globals>
+  $title$ := My First Blog Post
+  $author$ := Walt Whitman
+</globals>
+
+<variables>
+  $endearment$ := ol' chap
+</variables>
+
+<macros>
+  $conversation$ := <div class="conversation"><p>{}</p></div>
+  $closer$ := <div class="credits">{}</div>
+</macros>
+
+<content>
+  <conversation>
+    <p> What do you think, $endearment$? </p>
+  </conversation>
+</content>
+
+<credits>
+  <closer>
+    <p> Fin </p>
+  </closer>
+</credits>
