@@ -1,20 +1,3 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>$title$ - $author$</title>
-  </head>
-  <body>
-    <div class="main">
-      $content$
-    </div>
-    <footer>
-      $credits$
-    </footer>
-
-  </body>
-</html>
-
 <globals>
   $title$ := My First Blog Post
   $author$ := Walt Whitman
